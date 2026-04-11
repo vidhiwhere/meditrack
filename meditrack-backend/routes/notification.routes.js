@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const notificationController = require('../controllers/notification.controller');
+const { verifyToken } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/rbac.middleware');
 
-// Routes for notifications
-// POST /api/notification/send
-// GET /api/notification/unseen
-// PUT /api/notification/:id/mark-read
+router.use(verifyToken);
+router.post('/send', authorize('admin'), notificationController.sendDirectMessage);
 
 module.exports = router;
