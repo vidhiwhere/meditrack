@@ -29,7 +29,7 @@ module.exports = {
       await db.query(`UPDATE users SET status = 'active' WHERE id = $1`, [docRes.rows[0].user_id]);
       
       // Audit log
-      await db.query(`INSERT INTO audit_logs (action, resource_type, resource_id, details, created_by) VALUES ('APPROVED', 'DOCTOR', $1, 'Admin approved doctor registration', $2)`, [doctorId, req.user.userId]);
+      await db.query(`INSERT INTO dpdp_audit_logs (user_id, action, resource_accessed) VALUES ($1, 'APPROVED_DOCTOR', 'doctors/' || $2)`, [req.user.userId, doctorId]);
 
       res.json({ message: 'Doctor approved successfully' });
     } catch (error) {

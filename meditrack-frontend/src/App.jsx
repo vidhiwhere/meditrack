@@ -11,6 +11,7 @@ import SymptomsPage from './pages/patient/SymptomsPage';
 import AppointmentsPage from './pages/patient/AppointmentsPage';
 import DoctorDashboard, { DoctorSidebar } from './pages/doctor/DoctorDashboard';
 import AdminDashboard, { AdminSidebar } from './pages/admin/AdminDashboard';
+import DoctorVerificationsPage from './pages/admin/DoctorVerificationsPage';
 
 function PortalLayout({ Sidebar }) {
   return (

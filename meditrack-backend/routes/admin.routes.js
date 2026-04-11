@@ -9,6 +9,7 @@ router.use(authorize('admin'));
 
 router.get('/dashboard', adminController.getDashboard);
 router.get('/doctors-pending', adminController.getPendingDoctors);
+router.get('/doctors', adminController.getPendingDoctors); // alias for frontend nav
 router.post('/approve-doctor/:doctorId', adminController.approveDoctor);
 router.post('/reject-doctor/:doctorId', adminController.rejectDoctor);
 router.get('/users', adminController.getUsers);
