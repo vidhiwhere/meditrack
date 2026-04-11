@@ -84,4 +84,17 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
+  getDoctors: async (req, res) => {
+    try {
+      const result = await db.query(`
+        SELECT d.id, d.specialization, d.years_experience as experience_years, u.first_name, u.last_name 
+        FROM doctors d
+        JOIN users u ON d.user_id = u.id
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      logger.error('Get doctors error', { error: error.message });
+      res.status(500).json({ error: error.message });
+    }
+  },
 };

@@ -246,10 +246,33 @@ function getDrugInteractionDatabase() {
   };
 }
 
+/**
+ * Get doctor's patients
+ */
+const getPatients = async (doctorId) => {
+  try {
+    const result = await db.query(
+      `SELECT DISTINCT p.id, p.first_name, p.last_name, p.date_of_birth, p.gender, p.blood_group, u.email, u.phone,
+              (SELECT MAX(scheduled_at) FROM appointments WHERE patient_id = p.id AND doctor_id = $1) as last_visit
+       FROM patients p
+       JOIN users u ON p.user_id = u.id
+       JOIN appointments a ON a.patient_id = p.id
+       WHERE a.doctor_id = $1
+       ORDER BY last_visit DESC`,
+      [doctorId]
+    );
+    return result.rows;
+  } catch (error) {
+    logger.error('Get patients error', { error: error.message });
+    throw error;
+  }
+};
+
 module.exports = {
   getAppointments,
   updateAppointmentStatus,
   createPrescription,
   checkDrugInteractions,
-  getAnalytics
+  getAnalytics,
+  getPatients
 };

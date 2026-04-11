@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Stethoscope, Calendar, FileText, BarChart2, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
+import { Stethoscope, Calendar, FileText, BarChart2, Clock, CheckCircle, XCircle, Send, Users } from 'lucide-react';
 
 function DoctorSidebar() {
   const location = useLocation();
   const links = [
     { to: '/doctor', label: 'Queue', icon: Stethoscope },
+    { to: '/doctor/patients', label: 'My Patients', icon: Users },
     { to: '/doctor/prescriptions', label: 'Prescriptions', icon: FileText },
     { to: '/doctor/analytics', label: 'Analytics', icon: BarChart2 },
   ];

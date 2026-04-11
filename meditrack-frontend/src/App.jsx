@@ -10,8 +10,13 @@ import PatientDashboard, { PatientSidebar } from './pages/patient/Dashboard';
 import SymptomsPage from './pages/patient/SymptomsPage';
 import AppointmentsPage from './pages/patient/AppointmentsPage';
 import DoctorDashboard, { DoctorSidebar } from './pages/doctor/DoctorDashboard';
+import DoctorPrescriptions from './pages/doctor/DoctorPrescriptions';
+import DoctorAnalytics from './pages/doctor/DoctorAnalytics';
+import DoctorPatients from './pages/doctor/DoctorPatients';
 import AdminDashboard, { AdminSidebar } from './pages/admin/AdminDashboard';
 import DoctorVerificationsPage from './pages/admin/DoctorVerificationsPage';
+import UsersPage from './pages/admin/UsersPage';
+import AuditLogsPage from './pages/admin/AuditLogsPage';
 
 function PortalLayout({ Sidebar }) {
   return (
@@ -60,6 +65,9 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<DoctorDashboard />} />
+            <Route path="patients" element={<DoctorPatients />} />
+            <Route path="prescriptions" element={<DoctorPrescriptions />} />
+            <Route path="analytics" element={<DoctorAnalytics />} />
           </Route>
 
           {/* Admin Portal */}
@@ -69,6 +77,9 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<AdminDashboard />} />
+            <Route path="doctors" element={<DoctorVerificationsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="audit" element={<AuditLogsPage />} />
           </Route>
 
           {/* Root redirect */}

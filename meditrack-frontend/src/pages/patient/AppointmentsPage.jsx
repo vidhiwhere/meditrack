@@ -8,14 +8,22 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [form, setForm] = useState({ doctorId: '', date: '', time: '', reason: '' });
+  const [availableDoctors, setAvailableDoctors] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const fetchAppointments = () => {
     authFetch('/appointment/list').then(data => setAppointments(Array.isArray(data) ? data : [])).finally(() => setLoading(false));
   };
+  
+  const fetchDoctors = () => {
+    authFetch('/appointment/doctors').then(data => setAvailableDoctors(Array.isArray(data) ? data : [])).catch(err => console.error(err));
+  };
 
-  useEffect(() => { fetchAppointments(); }, []);
+  useEffect(() => { 
+    fetchAppointments(); 
+    fetchDoctors();
+  }, []);
 
   const handleBook = async (e) => {
     e.preventDefault();
@@ -51,8 +59,15 @@ export default function AppointmentsPage() {
           <form onSubmit={handleBook}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="input-group">
-                <label>Doctor ID</label>
-                <input className="input-field" placeholder="Paste your doctor's ID" value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required />
+                <label>Select Doctor</label>
+                <select className="input-field" value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
+                  <option value="" disabled>Choose a specialists...</option>
+                  {availableDoctors.map(doc => (
+                    <option key={doc.id} value={doc.id}>
+                      Dr. {doc.first_name} {doc.last_name} ({doc.specialization})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="input-group">
                 <label>Date</label>

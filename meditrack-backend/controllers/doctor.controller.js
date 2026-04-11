@@ -2,6 +2,7 @@
 const doctorService = require('../services/doctor/doctor.service');
 const db = require('../config/db');
 const logger = require('../utils/logger');
+const notificationService = require('../services/notification/notification.service');
 
 /**
  * Get doctor's appointments
@@ -92,6 +93,18 @@ const createPrescription = async (req, res) => {
       plainLanguageSummary || 'Take as prescribed'
     );
 
+    // Send WhatsApp Notification to Patient
+    try {
+      await notificationService.sendPrescriptionSummary(
+        prescription.id, 
+        prescription.patient_id, 
+        prescription.qr_verification_hash
+      );
+    } catch (notifErr) {
+      logger.warn('Failed to send WhatsApp prescription summary', { error: notifErr.message });
+      // We do not fail the request if notification fails.
+    }
+
     res.status(201).json({
       message: 'Prescription created',
       prescription
@@ -147,10 +160,36 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * Get doctor's patients
+ */
+const getPatients = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const doctorResult = await db.query(
+      'SELECT id FROM doctors WHERE user_id = $1 LIMIT 1',
+      [userId]
+    );
+
+    if (doctorResult.rows.length === 0) {
+      return res.status(403).json({ error: 'Not authorized as a doctor' });
+    }
+
+    const doctorId = doctorResult.rows[0].id;
+    const patients = await doctorService.getPatients(doctorId);
+    res.json(patients);
+  } catch (error) {
+    logger.error('Get patients error', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAppointments,
   updateAppointmentStatus,
   createPrescription,
   checkDrugInteractions,
-  getAnalytics
+  getAnalytics,
+  getPatients
 };

@@ -7,6 +7,7 @@ router.use(verifyToken);
 
 router.post('/book', appointmentController.bookAppointment);
 router.get('/list', appointmentController.listAppointments);
+router.get('/doctors', appointmentController.getDoctors);
 router.get('/:id', appointmentController.getAppointment);
 router.put('/:id', appointmentController.updateAppointment);
 router.delete('/:id', appointmentController.cancelAppointment);

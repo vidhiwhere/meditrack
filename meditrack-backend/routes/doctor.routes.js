@@ -36,4 +36,10 @@ router.post('/drug-interactions', doctorController.checkDrugInteractions);
  */
 router.get('/analytics', doctorController.getAnalytics);
 
+/**
+ * GET /api/doctor/patients
+ * Get a list of the doctor's unique patients
+ */
+router.get('/patients', doctorController.getPatients);
+
 module.exports = router;

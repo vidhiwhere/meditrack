@@ -6,7 +6,7 @@ import { Activity, Mail, Lock, Phone, User, AlertCircle, CheckCircle } from 'luc
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', phone: '', role: 'patient', firstName: '', lastName: '' });
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', phone: '', role: 'patient', firstName: '', lastName: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,7 @@ export default function RegisterPage() {
             <label>Phone Number</label>
             <div style={{ position: 'relative' }}>
               <Phone size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input type="tel" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="+91 98765 43210" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <input type="tel" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="9876543210 (10 digits only)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
             </div>
           </div>
 
@@ -107,6 +107,14 @@ export default function RegisterPage() {
             <div style={{ position: 'relative' }}>
               <Lock size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input type="password" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="Min. 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            </div>
+          </div>
+          
+          <div className="input-group">
+            <label>Confirm Password</label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input type="password" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="Min. 8 characters" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
             </div>
           </div>
 

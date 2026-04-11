@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Stethoscope, BarChart2, ShieldCheck, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Users, Stethoscope, BarChart2, ShieldCheck, CheckCircle, Clock, XCircle, ShieldAlert } from 'lucide-react';
 
 function AdminSidebar() {
   const location = useLocation();
@@ -9,6 +9,7 @@ function AdminSidebar() {
     { to: '/admin', label: 'Overview', icon: BarChart2 },
     { to: '/admin/doctors', label: 'Doctor Verifications', icon: Stethoscope },
     { to: '/admin/users', label: 'Users', icon: Users },
+    { to: '/admin/audit', label: 'Audit Logs', icon: ShieldAlert },
   ];
   return (
     <aside className="sidebar">
@@ -30,13 +31,17 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(null);
 
+  const [dashboardData, setDashboardData] = useState(null);
+
   const loadData = () => {
     Promise.all([
       authFetch('/admin/analytics').catch(() => null),
       authFetch('/admin/doctors-pending').catch(() => []),
-    ]).then(([a, docs]) => {
+      authFetch('/admin/dashboard').catch(() => null),
+    ]).then(([a, docs, d]) => {
       setAnalytics(a);
       setPendingDoctors(Array.isArray(docs) ? docs : []);
+      setDashboardData(d);
     }).finally(() => setLoading(false));
   };
 
@@ -46,6 +51,14 @@ export default function AdminDashboard() {
     setApproving(doctorId);
     try {
       await authFetch(`/admin/approve-doctor/${doctorId}`, { method: 'POST' });
+      setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
+    } finally { setApproving(null); }
+  };
+
+  const handleReject = async (doctorId) => {
+    setApproving(doctorId);
+    try {
+      await authFetch(`/admin/reject-doctor/${doctorId}`, { method: 'POST' });
       setPendingDoctors(prev => prev.filter(d => d.id !== doctorId));
     } finally { setApproving(null); }
   };
@@ -76,6 +89,39 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Dashboard Lists */}
+      {dashboardData && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+          <div className="glass-panel">
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={18} color="var(--primary)" /> Recent User Signups
+            </h3>
+            {dashboardData.recentUsers?.map(u => (
+              <div key={u.id} style={{ padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600 }}>{u.email}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(u.created_at).toLocaleDateString()}</span>
+                </div>
+                <div style={{ fontSize: '0.8.5rem', color: 'var(--secondary)', textTransform: 'capitalize' }}>
+                  Role: {u.role}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="glass-panel">
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Clock size={18} color="var(--primary)" /> Recent Appointments
+            </h3>
+            {dashboardData.recentAppointments?.length > 0 ? dashboardData.recentAppointments.map(a => (
+               <div key={a.id} style={{ padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  Appt: {a.id.substring(0, 8)}... - Status: {a.status}
+               </div>
+            )) : <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No recent appointments.</p>}
+          </div>
+        </div>
+      )}
 
       {/* Pending Doctor Verifications */}
       <div className="glass-panel">
@@ -113,7 +159,8 @@ export default function AdminDashboard() {
                         onClick={() => handleApprove(d.id)} disabled={approving === d.id}>
                         {approving === d.id ? '...' : <><CheckCircle size={14} /> Approve</>}
                       </button>
-                      <button className="btn btn-danger" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem' }}>
+                      <button className="btn btn-danger" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem' }}
+                        onClick={() => handleReject(d.id)} disabled={approving === d.id}>
                         <XCircle size={14} /> Reject
                       </button>
                     </div>
