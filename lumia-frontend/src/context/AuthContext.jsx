@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-const API_BASE = '/api'; // Uses Vite proxy → http://localhost:3000
+// Use environment variable for API base, fallback to /api for dev proxy
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

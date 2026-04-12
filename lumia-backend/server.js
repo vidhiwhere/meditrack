@@ -13,18 +13,31 @@ const app = express();
 
 // ===== Middleware =====
 app.use(helmet()); // Security headers
-const ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173', 
+  'http://localhost:3000', 
+  /\.vercel\.app$/, // Allow all Vercel subdomains
+  /https?:\/\/.*render\.com/ // Allow Render subdomains
+];
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = ALLOWED_ORIGINS.some(allowed => {
+      if (allowed instanceof RegExp) return allowed.test(origin);
+      return allowed === origin;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error(`CORS blocked: ${origin}`));
     }
   },
   credentials: true,
-})); // CORS
+}));
 app.use(morgan('combined')); // Logging
 app.use(express.json()); // Parse JSON
 app.use(express.urlencoded({ extended: true })); // Parse URL encoded
