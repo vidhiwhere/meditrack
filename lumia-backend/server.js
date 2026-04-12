@@ -46,15 +46,6 @@ app.use(cookieParser()); // Parse cookies
 // Database connection
 const db = require('./config/db');
 
-// Test DB connection
-db.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    logger.error('Database connection failed', err);
-  } else {
-    logger.info('Database connected successfully');
-  }
-});
-
 // ===== Routes =====
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/patient', require('./routes/patient.routes'));
@@ -82,15 +73,33 @@ app.use(errorHandler);
 // ===== Start Server =====
 const PORT = env.PORT || 3000;
 
-app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`, { port: PORT, env: env.NODE_ENV });
-  console.log(`
+async function startServer() {
+  try {
+    // Test DB connection
+    await db.query('SELECT NOW()');
+    logger.info('✅ Database connected successfully');
+
+    // Run migrations + seed in production
+    if (process.env.DATABASE_URL) {
+      const { runDeployInit } = require('./scripts/deploy-init');
+      await runDeployInit();
+    }
+  } catch (err) {
+    logger.error('Startup initialization failed', { error: err.message });
+    // Don't crash - let the server start anyway for health checks
+  }
+
+  app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT}`, { port: PORT, env: env.NODE_ENV });
+    console.log(`
   ╔════════════════════════════════════╗
   ║       Lumia Backend Server         ║
   ║     Port: ${PORT}                        ║
-  ║     Env: ${env.NODE_ENV}                   ║
   ╚════════════════════════════════════╝
-  `);
-});
+    `);
+  });
+}
+
+startServer();
 
 module.exports = app;
