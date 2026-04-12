@@ -23,11 +23,16 @@ module.exports = {
 
       const result = await db.query(
         `INSERT INTO appointments (patient_id, doctor_id, scheduled_at, status, pre_visit_notes)
-         VALUES ($1, $2, $3, 'SCHEDULED', $4) RETURNING *`,
+         VALUES ($1, $2, $3, 'BOOKED', $4) RETURNING *`,
         [pId, doctorId, appointmentTime, reason]
       );
 
-      await notificationService.sendAppointmentReminder(result.rows[0].id, pId, doctorId, appointmentTime);
+      // Send notification (non-blocking — don't fail the booking if notification fails)
+      try {
+        await notificationService.sendAppointmentReminder(result.rows[0].id, pId, doctorId, appointmentTime);
+      } catch (notifErr) {
+        logger.warn('Appointment booked but notification failed', { error: notifErr.message });
+      }
 
       res.status(201).json({ message: 'Appointment booked successfully', appointment: result.rows[0] });
     } catch (error) {
@@ -87,11 +92,16 @@ module.exports = {
   getDoctors: async (req, res) => {
     try {
       const result = await db.query(`
-        SELECT d.id, d.specialization, d.years_experience as experience_years, u.first_name, u.last_name 
+        SELECT d.id, d.specializations, d.first_name, d.last_name
         FROM doctors d
-        JOIN users u ON d.user_id = u.id
+        WHERE d.verification_status = 'APPROVED'
       `);
-      res.json(result.rows);
+      // Normalize: use first specialization from array for display
+      const doctors = result.rows.map(d => ({
+        ...d,
+        specialization: d.specializations && d.specializations.length > 0 ? d.specializations[0] : 'General Physician'
+      }));
+      res.json(doctors);
     } catch (error) {
       logger.error('Get doctors error', { error: error.message });
       res.status(500).json({ error: error.message });
