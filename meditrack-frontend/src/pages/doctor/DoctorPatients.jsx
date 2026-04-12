@@ -39,6 +39,7 @@ export default function DoctorPatients() {
                   <th>Patient</th>
                   <th>Contact</th>
                   <th>Health Info</th>
+                  <th>Total Revenue</th>
                   <th>Last Visit</th>
                 </tr>
               </thead>
@@ -62,7 +63,10 @@ export default function DoctorPatients() {
                     </td>
                     <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       <div>Gender: {p.gender || '—'}</div>
-                      <div>Blood: {p.blood_group || '—'}</div>
+                      <div>DOB: {p.dob ? new Date(p.dob).toLocaleDateString() : '—'}</div>
+                    </td>
+                    <td>
+                       <div style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{parseFloat(p.total_revenue || 0).toLocaleString()}</div>
                     </td>
                     <td style={{ fontSize: '0.85rem' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--primary)' }}>

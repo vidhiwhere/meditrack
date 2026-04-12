@@ -51,7 +51,7 @@ module.exports = {
       if (result.rows.length === 0) return res.status(404).json({ error: 'Invalid or expired prescription hash' });
       
       // Audit log the verification attempt
-      await db.query(`INSERT INTO audit_logs (action, resource_type, resource_id, details) VALUES ('VERIFIED', 'PRESCRIPTION', $1, 'QR code verified')`, [result.rows[0].id]);
+      await db.query(`INSERT INTO dpdp_audit_logs (user_id, action, resource_accessed) VALUES ($1, 'VERIFIED_PRESCRIPTION', $2)`, [req.user?.userId || null, result.rows[0].id]);
 
       res.json({ verified: true, prescription: result.rows[0] });
     } catch (error) {

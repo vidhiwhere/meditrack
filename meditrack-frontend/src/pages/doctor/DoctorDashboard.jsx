@@ -39,16 +39,64 @@ export default function DoctorDashboard() {
   const [prescForm, setPrescForm] = useState({ medicineName: '', dosage: '', frequency: '', duration: '' });
   const [prescError, setPrescError] = useState('');
   const [prescSuccess, setPrescSuccess] = useState('');
+  const [completing, setCompleting] = useState(null);
+  const [doctorProfile, setDoctorProfile] = useState(null);
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
+    console.log('--- Doctor Dashboard Version 2.0 Loaded ---');
     Promise.all([
-      authFetch('/doctor/appointments').catch(() => []),
+      authFetch('/doctor/appointments').catch(() => ({ appointments: [] })),
       authFetch('/doctor/analytics').catch(() => null),
-    ]).then(([appts, analytics]) => {
-      setAppointments(Array.isArray(appts) ? appts : []);
+      authFetch('/appointment/doctors').then(docs => {
+         // Find current logged in doctor in the list (or we could have a /doctor/profile endpoint)
+         // Since we don't have a direct /doctor/profile, we'll try to find by ID if we had it, 
+         // but we can just use the first one for now or a fallback.
+         // Actually, let's assume a default of 500 if not found.
+         return docs;
+      }).catch(() => [])
+    ]).then(([apptData, analytics, docs]) => {
+      // Service returns { appointments: [...], total: N }
+      const appts = apptData?.appointments ?? (Array.isArray(apptData) ? apptData : []);
+      setAppointments(appts);
       setAnalytics(analytics);
+      
+      // Try to find the default fee for this doctor
+      // (Improvements: Add /doctor/profile backend route)
+      const myDoc = docs.find(d => d.email === user?.email); 
+      if (myDoc) setDoctorProfile(myDoc);
     }).finally(() => setLoading(false));
   }, []);
+
+  const handleComplete = async (appointmentId) => {
+    const defaultFee = doctorProfile?.consultation_fee || 500;
+    const feeInput = window.prompt('Enter consultation fee for this patient:', defaultFee);
+    if (feeInput === null) return; // Cancelled
+    
+    const fee = parseFloat(feeInput);
+    if (isNaN(fee)) {
+      alert('Please enter a valid number for the fee');
+      return;
+    }
+
+    setCompleting(appointmentId);
+    try {
+      await authFetch('/doctor/appointments/status', {
+        method: 'PUT',
+        body: JSON.stringify({ appointmentId, status: 'COMPLETED', fee }),
+      });
+      setAppointments(prev => prev.map(a => a.id === appointmentId ? { ...a, status: 'COMPLETED', fee } : a));
+      setAnalytics(prev => ({
+        ...prev,
+        completedAppointments: (parseInt(prev?.completedAppointments || 0)) + 1,
+        totalRevenue: (parseFloat(prev?.totalRevenue || 0)) + fee
+      }));
+    } catch (err) {
+      alert('Failed to update: ' + err.message);
+    } finally {
+      setCompleting(null);
+    }
+  };
 
   const handleIssuePrescription = async (e) => {
     e.preventDefault();
@@ -83,6 +131,7 @@ export default function DoctorDashboard() {
           { label: "Today's Queue", value: todaysQueue.length, icon: Clock, color: 'var(--primary)' },
           { label: 'Total Appointments', value: appointments.length, icon: Calendar, color: 'var(--secondary)' },
           { label: 'Completed', value: appointments.filter(a => a.status === 'COMPLETED').length, icon: CheckCircle, color: '#22c55e' },
+          { label: 'Total Revenue', value: `₹${parseFloat(analytics?.totalRevenue || 0).toLocaleString()}`, icon: BarChart2, color: '#f59e0b' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="stat-card glass-panel">
             <div className="stat-icon" style={{ background: `${color}20`, color }}>
@@ -117,9 +166,19 @@ export default function DoctorDashboard() {
                   <td><StatusBadge status={a.status} /></td>
                   <td>
                     {(a.status === 'BOOKED' || a.status === 'SCHEDULED') && (
-                      <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setPrescriptionModal(a)}>
-                        <Send size={14} /> Issue Rx
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setPrescriptionModal(a)}>
+                          <Send size={14} /> Issue Rx
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: completing === a.id ? 0.6 : 1 }}
+                          disabled={completing === a.id}
+                          onClick={() => handleComplete(a.id)}
+                        >
+                          <CheckCircle size={14} /> {completing === a.id ? 'Saving…' : 'Complete'}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

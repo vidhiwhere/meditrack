@@ -38,7 +38,7 @@ const getAppointments = async (req, res) => {
  */
 const updateAppointmentStatus = async (req, res) => {
   try {
-    const { appointmentId, status } = req.body;
+    const { appointmentId, status, fee } = req.body;
     
     if (!appointmentId || !status) {
       return res.status(400).json({ error: 'Appointment ID and status required' });
@@ -54,7 +54,7 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ error: 'Appointment not found' });
     }
 
-    const updated = await doctorService.updateAppointmentStatus(appointmentId, status);
+    const updated = await doctorService.updateAppointmentStatus(appointmentId, status, fee);
     res.json({
       message: 'Appointment status updated',
       appointment: updated

@@ -9,6 +9,7 @@ router.get('/verify/:hash', prescriptionController.verifyPrescription);
 router.use(verifyToken);
 
 router.post('/create', prescriptionController.createPrescription);
+router.get('/', prescriptionController.listPrescriptions);
 router.get('/list', prescriptionController.listPrescriptions);
 router.get('/:id', prescriptionController.getPrescription);
 router.put('/:id', prescriptionController.updatePrescription);

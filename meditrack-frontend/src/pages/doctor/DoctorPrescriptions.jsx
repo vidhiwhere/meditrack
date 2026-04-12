@@ -8,7 +8,7 @@ export default function DoctorPrescriptions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    authFetch('/prescription')
+    authFetch('/prescription/list')
       .then(res => setPrescriptions(Array.isArray(res) ? res : []))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));

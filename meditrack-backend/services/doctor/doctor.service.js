@@ -50,11 +50,11 @@ const getAppointments = async (doctorId, status = null, limit = 20, offset = 0) 
 /**
  * Update appointment status (completed, cancelled)
  */
-const updateAppointmentStatus = async (appointmentId, status, notes) => {
+const updateAppointmentStatus = async (appointmentId, status, fee) => {
   try {
     const result = await db.query(
-      `UPDATE appointments SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [status, appointmentId]
+      `UPDATE appointments SET status = $1, fee = $2 WHERE id = $3 RETURNING *`,
+      [status, fee, appointmentId]
     );
 
     if (result.rows.length === 0) {
@@ -179,9 +179,12 @@ const getAnalytics = async (doctorId) => {
     );
     const patientsSeen = parseInt(patientsResult.rows[0].count);
 
-    // Revenue / consultations (mock)
-    const consultationFee = 500;
-    const totalRevenue = completedAppointments * consultationFee;
+    // Revenue calculation from fee column
+    const revenueResult = await db.query(
+      `SELECT SUM(fee) as total FROM appointments WHERE doctor_id = $1 AND status = 'COMPLETED'`,
+      [doctorId]
+    );
+    const totalRevenue = parseFloat(revenueResult.rows[0].total || 0);
 
     return {
       totalAppointments,
@@ -252,8 +255,9 @@ function getDrugInteractionDatabase() {
 const getPatients = async (doctorId) => {
   try {
     const result = await db.query(
-      `SELECT DISTINCT p.id, p.first_name, p.last_name, p.date_of_birth, p.gender, p.blood_group, u.email, u.phone,
-              (SELECT MAX(scheduled_at) FROM appointments WHERE patient_id = p.id AND doctor_id = $1) as last_visit
+      `SELECT DISTINCT p.id, p.first_name, p.last_name, p.dob, p.gender, u.email, u.phone,
+              (SELECT MAX(scheduled_at) FROM appointments WHERE patient_id = p.id AND doctor_id = $1) as last_visit,
+              (SELECT SUM(fee) FROM appointments WHERE patient_id = p.id AND doctor_id = $1 AND status = 'COMPLETED') as total_revenue
        FROM patients p
        JOIN users u ON p.user_id = u.id
        JOIN appointments a ON a.patient_id = p.id
