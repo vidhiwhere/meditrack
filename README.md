@@ -47,9 +47,6 @@ A modern, full-stack healthcare platform designed to streamline the consultation
 ![Analytics](./docs/screenshots/doctor_analytics.png)
 *Real-time tracking of patient flow and revenue generation.*
 
-### Patient CRM
-![My Patients](./docs/screenshots/my_patients_full.png)
-*A dedicated CRM view for doctors to monitor their active patient base and cumulative fees paid.*
 
 ---
 
