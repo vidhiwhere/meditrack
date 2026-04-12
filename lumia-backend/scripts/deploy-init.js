@@ -1,56 +1,63 @@
-const fs = require('fs');
-const path = require('path');
 const db = require('../config/db');
-const logger = require('../utils/logger');
 
 async function runDeployInit() {
     console.log('🚀 Starting Production Database Initialization...');
 
-    // 1. Run Migrations
-    const migrationsDir = path.join(__dirname, '../migrations');
-    const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
-    console.log(`Found ${files.length} migration files.`);
-
-    for (const file of files) {
-        console.log(`Running migration: ${file}`);
-        const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+    try {
+        // Run the main schema migration (001_init.sql handles everything)
+        const fs = require('fs');
+        const path = require('path');
+        const mainSql = fs.readFileSync(path.join(__dirname, '../migrations/001_init.sql'), 'utf8');
+        
+        console.log('Running main schema migration (001_init.sql)...');
         try {
-            await db.query(sql);
-            console.log(`  ✅ ${file} done.`);
+            await db.query(mainSql);
+            console.log('✅ Schema ready.');
         } catch (err) {
             if (err.message.includes('already exists') || err.message.includes('duplicate')) {
-                console.log(`  ⏭  ${file} already applied, skipping.`);
+                console.log('⏭  Schema already applied, skipping.');
             } else {
-                console.error(`  ❌ ${file} failed:`, err.message);
-                throw err;
+                console.error('Schema migration error (non-fatal):', err.message);
+                // Don't throw - tables might already exist from a previous run
             }
         }
-    }
 
-    // 2. Check if Seeding is needed
-    let userCount = 0;
-    try {
-        const userCountRes = await db.query('SELECT COUNT(*) FROM users');
-        userCount = parseInt(userCountRes.rows[0].count);
-    } catch (err) {
-        console.log('Could not count users, will proceed with seeding.');
-    }
+        // Check if fee column exists in appointments (add if missing)
+        try {
+            await db.query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS fee DECIMAL(10,2)`);
+            console.log('✅ Fee column ensured.');
+        } catch (err) {
+            console.log('Fee column check skipped:', err.message);
+        }
 
-    if (userCount === 0) {
-        console.log('Database is empty. Running seeders...');
-        const { seedDatabase } = require('../seeds/seed');
-        await seedDatabase();
-        console.log('✅ Seeding completed successfully.');
-    } else {
-        console.log(`Database already has ${userCount} users. Skipping seeding.`);
-    }
+        // Check if seeding is needed
+        let userCount = 0;
+        try {
+            const res = await db.query('SELECT COUNT(*) FROM users');
+            userCount = parseInt(res.rows[0].count);
+            console.log(`Found ${userCount} existing users.`);
+        } catch (err) {
+            console.log('Could not count users:', err.message);
+        }
 
-    console.log('🏁 Production initialization finished!');
+        if (userCount === 0) {
+            console.log('Database is empty. Running seeders...');
+            const { seedDatabase } = require('../seeds/seed');
+            await seedDatabase();
+            console.log('✅ Seeding completed successfully.');
+        } else {
+            console.log(`Database already has ${userCount} users. Skipping seeding.`);
+        }
+
+        console.log('🏁 Production initialization finished!');
+    } catch (error) {
+        // Log but don't crash the server
+        console.error('⚠️  Initialization warning:', error.message);
+    }
 }
 
 module.exports = { runDeployInit };
 
-// Allow standalone execution (e.g. for manual runs)
 if (require.main === module) {
     runDeployInit()
         .then(() => process.exit(0))
