@@ -37,6 +37,7 @@ out/
 # Testing
 coverage/
 .nyc_output/
+.md/
 
 # Temporary files
 tmp/
