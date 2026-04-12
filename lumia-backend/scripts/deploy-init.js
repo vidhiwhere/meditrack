@@ -1,51 +1,68 @@
 const fs = require('fs');
 const path = require('path');
+
+// Ensure env is loaded
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: path.join(__dirname, '../.env') });
+}
+
 const db = require('../config/db');
 const logger = require('../utils/logger');
 
 async function runDeployInit() {
-    try {
-        logger.info('🚀 Starting Production Database Initialization...');
+    console.log('🚀 Starting Production Database Initialization...');
+    console.log('DATABASE_URL present:', !!process.env.DATABASE_URL);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
 
-        // 1. Run Migrations
+    try {
+        // 1. Test DB connection first
+        await db.query('SELECT 1');
+        console.log('✅ Database connection successful.');
+
+        // 2. Run Migrations
         const migrationsDir = path.join(__dirname, '../migrations');
         const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+        console.log(`Found ${files.length} migration files.`);
 
         for (const file of files) {
-            logger.info(`Running migration: ${file}`);
+            console.log(`Running migration: ${file}`);
             const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
             try {
                 await db.query(sql);
+                console.log(`  ✅ ${file} done.`);
             } catch (err) {
-                // If the error is "already exists", we can ignore it for a simplified migrator
-                if (err.message.includes('already exists')) {
-                    logger.info(`Table/Relation in ${file} already exists, skipping...`);
+                if (err.message.includes('already exists') || err.message.includes('duplicate')) {
+                    console.log(`  ⏭  ${file} already applied, skipping.`);
                 } else {
+                    console.error(`  ❌ ${file} failed:`, err.message);
                     throw err;
                 }
             }
         }
 
-        // 2. Check if Seeding is needed
-        const userCountRes = await db.query('SELECT COUNT(*) FROM users');
-        const userCount = parseInt(userCountRes.rows[0].count);
-
-        if (userCount === 0) {
-            logger.info('Database is empty. Running seeders...');
-            // We'll require and run the seed script logic
-            // Note: Since we are in the scripts folder, we go up to the root to find seeds
-            const { seedDatabase } = require('../seeds/seed');
-            await seedDatabase();
-            logger.info('✅ Seeding completed successfully.');
-        } else {
-            logger.info('Database already contains data. Skipping seeding.');
+        // 3. Check if Seeding is needed
+        let userCount = 0;
+        try {
+            const userCountRes = await db.query('SELECT COUNT(*) FROM users');
+            userCount = parseInt(userCountRes.rows[0].count);
+        } catch (err) {
+            console.log('users table not ready yet, will seed.');
         }
 
-        logger.info('🏁 Production initialization finished!');
+        if (userCount === 0) {
+            console.log('Database is empty. Running seeders...');
+            const { seedDatabase } = require('../seeds/seed');
+            await seedDatabase();
+            console.log('✅ Seeding completed successfully.');
+        } else {
+            console.log(`Database has ${userCount} users. Skipping seeding.`);
+        }
+
+        console.log('🏁 Production initialization finished!');
         process.exit(0);
     } catch (error) {
-        logger.error('❌ Initialization failed', { error: error.message });
-        console.error(error);
+        console.error('❌ Initialization failed:', error.message);
+        console.error(error.stack);
         process.exit(1);
     }
 }
