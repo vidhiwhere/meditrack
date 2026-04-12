@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Mail, Phone, Calendar, UserCircle } from 'lucide-react';
+import { Users, Mail, Phone, Calendar, UserCircle, BarChart2 } from 'lucide-react';
 
 export default function DoctorPatients() {
   const { authFetch } = useAuth();
@@ -39,7 +39,7 @@ export default function DoctorPatients() {
                   <th>Patient</th>
                   <th>Contact</th>
                   <th>Health Info</th>
-                  <th>Total Revenue</th>
+                  <th>Total Fees Paid</th>
                   <th>Last Visit</th>
                 </tr>
               </thead>
@@ -48,7 +48,7 @@ export default function DoctorPatients() {
                   <tr key={p.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
                           {p.first_name?.[0]}{p.last_name?.[0]}
                         </div>
                         <div>
@@ -66,7 +66,9 @@ export default function DoctorPatients() {
                       <div>DOB: {p.dob ? new Date(p.dob).toLocaleDateString() : '—'}</div>
                     </td>
                     <td>
-                       <div style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{parseFloat(p.total_revenue || 0).toLocaleString()}</div>
+                       <div style={{ fontWeight: 700, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                         <BarChart2 size={14} /> ₹{parseFloat(p.total_revenue || 0).toLocaleString()}
+                       </div>
                     </td>
                     <td style={{ fontSize: '0.85rem' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--primary)' }}>

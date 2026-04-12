@@ -43,9 +43,9 @@ const registerUser = async (email, phone, password, role, firstName, lastName) =
     if (role === 'doctor') {
       // Doctor also gets a doctor profile
       await db.query(
-        `INSERT INTO doctors (user_id, first_name, last_name, mci_registration_number, mci_verification_status, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
-        [user.id, firstName || '', lastName || '', 'temp_' + user.id, 'pending']
+        `INSERT INTO doctors (user_id, first_name, last_name, mci_registration_number, mci_verification_status, verification_status, specializations, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, 'verified', 'APPROVED', ARRAY['General Physician'], NOW(), NOW())`,
+        [user.id, firstName || '', lastName || '', 'temp_' + user.id]
       );
     }
 

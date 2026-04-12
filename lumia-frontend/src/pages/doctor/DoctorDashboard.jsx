@@ -45,7 +45,9 @@ export default function DoctorDashboard() {
   const [prescError, setPrescError] = useState('');
   const [prescSuccess, setPrescSuccess] = useState('');
   const [completing, setCompleting] = useState(null);
+  const [completeModal, setCompleteModal] = useState(null);
   const [doctorProfile, setDoctorProfile] = useState(null);
+  const [feeForm, setFeeForm] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
@@ -73,17 +75,22 @@ export default function DoctorDashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const handleComplete = async (appointmentId) => {
-    const defaultFee = doctorProfile?.consultation_fee || 500;
-    const feeInput = window.prompt('Enter consultation fee for this patient:', defaultFee);
-    if (feeInput === null) return; // Cancelled
+  const openCompleteModal = (appointment) => {
+    setCompleteModal(appointment);
+    setFeeForm(doctorProfile?.consultation_fee || 500);
+  };
+
+  const handleComplete = async (e) => {
+    e.preventDefault();
+    if (!completeModal) return;
     
-    const fee = parseFloat(feeInput);
+    const fee = parseFloat(feeForm);
     if (isNaN(fee)) {
       alert('Please enter a valid number for the fee');
       return;
     }
 
+    const appointmentId = completeModal.id;
     setCompleting(appointmentId);
     try {
       await authFetch('/doctor/appointments/status', {
@@ -96,6 +103,9 @@ export default function DoctorDashboard() {
         completedAppointments: (parseInt(prev?.completedAppointments || 0)) + 1,
         totalRevenue: (parseFloat(prev?.totalRevenue || 0)) + fee
       }));
+      setCompleteModal(null);
+      setSuccessMsg(`Appointment completed. ₹${fee} added to total revenue.`);
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       alert('Failed to update: ' + err.message);
     } finally {
@@ -128,6 +138,7 @@ export default function DoctorDashboard() {
       <div style={{ marginBottom: '3rem' }}>
         <h1 className="font-serif" style={{ fontSize: '2.8rem', marginBottom: '0.5rem' }}>Medical Queue</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 500 }}>Overview of your daily appointments and practice revenue.</p>
+        {successMsg && <div style={{ background: 'var(--success)', color: 'white', padding: '1rem', borderRadius: '12px', marginTop: '1rem', animation: 'fadeIn 0.3s ease-out', fontWeight: 600 }}>{successMsg}</div>}
       </div>
 
       {/* Analytics row */}
@@ -179,7 +190,7 @@ export default function DoctorDashboard() {
                           className="btn btn-primary"
                           style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: completing === a.id ? 0.6 : 1 }}
                           disabled={completing === a.id}
-                          onClick={() => handleComplete(a.id)}
+                          onClick={() => openCompleteModal(a)}
                         >
                           <CheckCircle size={14} /> {completing === a.id ? 'Saving…' : 'Complete'}
                         </button>
@@ -212,6 +223,36 @@ export default function DoctorDashboard() {
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Issue Prescription</button>
                 <button type="button" className="btn btn-secondary" onClick={() => setPrescriptionModal(null)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Appointment Modal */}
+      {completeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '2rem' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: 400, animation: 'fadeIn 0.3s ease-out' }}>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: '1.5rem' }}>Finalize Consultation</h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+              Confirming completion for <strong>{completeModal.first_name} {completeModal.last_name}</strong>. Please record the consultation fee.
+            </p>
+            <form onSubmit={handleComplete}>
+              <div className="input-group">
+                <label>Consultation Fee (₹)</label>
+                <input 
+                  type="number" 
+                  className="input-field" 
+                  value={feeForm} 
+                  onChange={(e) => setFeeForm(e.target.value)} 
+                  placeholder="500"
+                  autoFocus
+                  required 
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Confirm & Update</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setCompleteModal(null)}>Cancel</button>
               </div>
             </form>
           </div>

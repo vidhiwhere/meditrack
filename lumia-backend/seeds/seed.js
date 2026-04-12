@@ -78,11 +78,12 @@ async function seedDatabase() {
        const docId = faker.helpers.arrayElement(doctorIds);
        const status = faker.helpers.arrayElement(['BOOKED', 'COMPLETED', 'CANCELLED']);
        const date = faker.date.recent();
+       const fee = status === 'COMPLETED' ? faker.number.int({min:500, max:2000}) : null;
        
        const appRes = await db.query(
-         `INSERT INTO appointments (patient_id, doctor_id, scheduled_at, status, pre_visit_notes)
-          VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-         [patId, docId, date, status, faker.lorem.sentence()]
+         `INSERT INTO appointments (patient_id, doctor_id, scheduled_at, status, pre_visit_notes, fee)
+          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+         [patId, docId, date, status, faker.lorem.sentence(), fee]
        );
        
        const appId = appRes.rows[0].id;
