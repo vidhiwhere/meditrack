@@ -27,43 +27,44 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '480px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 60, height: 60, background: 'rgba(0,255,157,0.1)', borderRadius: 14, marginBottom: '1rem' }}>
-            <Activity size={28} color="var(--primary)" />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem 2rem' }}>
+      <div className="glass-panel animate-in" style={{ width: '100%', maxWidth: '520px', background: 'rgba(255,255,255,0.7)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, background: 'var(--primary)', borderRadius: 18, marginBottom: '1.25rem', color: 'white' }}>
+            <Activity size={32} />
           </div>
-          <h1 style={{ fontSize: '1.6rem' }}>Create your <span className="text-gradient">MediTrack</span> account</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>Your healthcare, digitized.</p>
+          <h1 className="font-serif" style={{ fontSize: '2.2rem', marginBottom: '0.4rem' }}>Join MediTrack</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', fontWeight: 500 }}>Start your personal wellness journey today.</p>
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '0.8rem 1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
-            <AlertCircle size={16} /> {error}
+          <div style={{ background: 'rgba(212,138,138,0.1)', border: '1px solid rgba(212,138,138,0.2)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
+            <AlertCircle size={18} /> {error}
           </div>
         )}
         {success && (
-          <div style={{ background: 'rgba(0,255,157,0.1)', border: '1px solid rgba(0,255,157,0.3)', borderRadius: 10, padding: '0.8rem 1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', color: 'var(--primary)', fontSize: '0.9rem' }}>
-            <CheckCircle size={16} /> {success}
+          <div style={{ background: 'var(--bg-accent)', border: '1px solid var(--primary)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', color: 'var(--text-main)', fontSize: '0.9rem' }}>
+            <CheckCircle size={18} color="var(--primary)" /> {success}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           {/* Role Selector */}
-          <div className="input-group">
-            <label>I am a...</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="input-group" style={{ marginBottom: '2rem' }}>
+            <label style={{ fontSize: '0.85rem', marginBottom: '0.75rem', display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>I am a...</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {['patient', 'doctor'].map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setForm({ ...form, role: r })}
                   style={{
-                    padding: '0.75rem', borderRadius: 10, cursor: 'pointer', fontFamily: 'Outfit, sans-serif', fontWeight: 600, textTransform: 'capitalize',
-                    background: form.role === r ? 'rgba(0,255,157,0.15)' : 'rgba(0,0,0,0.2)',
-                    border: form.role === r ? '1px solid var(--primary)' : '1px solid var(--surface-border)',
-                    color: form.role === r ? 'var(--primary)' : 'var(--text-muted)',
-                    transition: 'all 0.2s ease',
+                    padding: '1rem', borderRadius: 16, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em',
+                    background: form.role === r ? 'var(--primary)' : 'white',
+                    border: '1px solid var(--surface-border)',
+                    color: form.role === r ? 'white' : 'var(--text-muted)',
+                    boxShadow: form.role === r ? '0 8px 16px rgba(232,167,181,0.3)' : 'var(--shadow-sm)',
+                    transition: 'var(--transition)',
                   }}
                 >
                   {r}
@@ -72,60 +73,54 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
             <div className="input-group">
-              <label>First Name</label>
+              <label style={{ fontSize: '0.85rem' }}>First Name</label>
               <div style={{ position: 'relative' }}>
-                <User size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type="text" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="John" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
+                <User size={15} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input type="text" className="input-field" style={{ paddingLeft: '3rem' }} placeholder="John" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
               </div>
             </div>
             <div className="input-group">
-              <label>Last Name</label>
+              <label style={{ fontSize: '0.85rem' }}>Last Name</label>
               <input type="text" className="input-field" placeholder="Doe" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </div>
           </div>
 
           <div className="input-group">
-            <label>Email Address</label>
+            <label style={{ fontSize: '0.85rem' }}>Email Address</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input type="email" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+              <Mail size={15} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input type="email" className="input-field" style={{ paddingLeft: '3rem' }} placeholder="you@wellness.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
             </div>
           </div>
 
           <div className="input-group">
-            <label>Phone Number</label>
+            <label style={{ fontSize: '0.85rem' }}>Phone Number</label>
             <div style={{ position: 'relative' }}>
-              <Phone size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input type="tel" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="9876543210 (10 digits only)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+              <Phone size={15} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input type="tel" className="input-field" style={{ paddingLeft: '3rem' }} placeholder="9876543210" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
             </div>
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input type="password" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="Min. 8 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div className="input-group">
+              <label style={{ fontSize: '0.85rem' }}>Password</label>
+              <input type="password" className="input-field" placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
             </div>
-          </div>
-          
-          <div className="input-group">
-            <label>Confirm Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-              <input type="password" className="input-field" style={{ paddingLeft: '2.2rem' }} placeholder="Min. 8 characters" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
+            <div className="input-group">
+              <label style={{ fontSize: '0.85rem' }}>Confirm</label>
+              <input type="password" className="input-field" placeholder="••••••••" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '54px', fontSize: '1.1rem', marginTop: '1rem' }} disabled={loading}>
+            {loading ? 'Creating journey...' : 'Begin Journey'}
           </button>
         </form>
-
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Sign In</Link>
+        <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          Already a member?{' '}
+          <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>Continue to portal</Link>
         </p>
       </div>
     </div>

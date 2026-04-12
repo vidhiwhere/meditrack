@@ -26,34 +26,34 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '440px' }}>
+      <div className="glass-panel animate-in" style={{ width: '100%', maxWidth: '440px', background: 'rgba(255,255,255,0.7)' }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, background: 'rgba(0,255,157,0.1)', borderRadius: 16, marginBottom: '1rem' }}>
-            <Activity size={32} color="var(--primary)" />
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 72, height: 72, background: 'var(--primary)', borderRadius: 20, marginBottom: '1.25rem', color: 'white', boxShadow: '0 8px 16px rgba(232,167,181,0.2)' }}>
+            <Activity size={36} />
           </div>
-          <h1 style={{ fontSize: '1.8rem', marginBottom: '0.25rem' }}>
-            Welcome to <span className="text-gradient">MediTrack</span>
+          <h1 className="font-serif" style={{ fontSize: '2.4rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>
+            MediTrack
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Sign in to access your health portal</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500 }}>The future of personal wellness</p>
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '0.8rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
-            <AlertCircle size={16} /> {error}
+          <div style={{ background: 'rgba(212,138,138,0.1)', border: '1px solid rgba(212,138,138,0.2)', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--danger)', fontSize: '0.9rem' }}>
+            <AlertCircle size={18} /> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label>Email Address</label>
+          <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+            <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block' }}>Email Address</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Mail size={16} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="email"
                 className="input-field"
-                style={{ paddingLeft: '2.5rem' }}
-                placeholder="you@example.com"
+                style={{ paddingLeft: '3rem' }}
+                placeholder="hello@wellness.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
@@ -61,14 +61,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
+          <div className="input-group" style={{ marginBottom: '2rem' }}>
+            <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block' }}>Password</label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Lock size={16} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="password"
                 className="input-field"
-                style={{ paddingLeft: '2.5rem' }}
+                style={{ paddingLeft: '3rem' }}
                 placeholder="••••••••"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -77,20 +77,20 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '52px', fontSize: '1.1rem' }} disabled={loading}>
+            {loading ? 'Entering...' : 'Enter Portal'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}>Register here</Link>
+        <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          New to MediTrack?{' '}
+          <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>Begin your journey</Link>
         </p>
 
         {/* Quick logins hint */}
-        <div style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: 10, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <strong style={{ color: 'var(--text-main)' }}>Demo Credentials</strong>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+        <div style={{ marginTop: '2.5rem', padding: '1.5rem', background: 'var(--bg-accent)', borderRadius: 16, border: '1px solid var(--surface-border)' }}>
+          <strong style={{ color: 'var(--text-main)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demo Access</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginTop: '1rem' }}>
             {[
               { role: 'Admin', email: 'admin@meditrack.com', pass: 'admin123' },
               { role: 'Doctor', email: 'doctor1@meditrack.com', pass: 'doc123' },
@@ -98,7 +98,8 @@ export default function LoginPage() {
             ].map((d) => (
               <button
                 key={d.role}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--surface-border)', borderRadius: 8, padding: '0.5rem', cursor: 'pointer', color: 'var(--text-main)', fontFamily: 'Outfit, sans-serif', fontSize: '0.75rem' }}
+                type="button"
+                style={{ background: 'white', border: '1px solid var(--surface-border)', borderRadius: 12, padding: '0.6rem', cursor: 'pointer', color: 'var(--text-main)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', fontWeight: 600, transition: 'var(--transition)' }}
                 onClick={() => setForm({ email: d.email, password: d.pass })}
               >
                 {d.role}

@@ -65,25 +65,25 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.8rem' }}>Admin <span className="text-gradient">Overview</span></h1>
-        <p style={{ color: 'var(--text-muted)' }}>Platform-wide analytics and management.</p>
+      <div style={{ marginBottom: '3rem' }}>
+        <h1 className="font-serif" style={{ fontSize: '2.8rem', marginBottom: '0.5rem' }}>Admin Portal</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 500 }}>Global oversight and platform health metrics.</p>
       </div>
 
       {/* Stat Cards */}
-      <div className="stat-grid" style={{ marginBottom: '2rem' }}>
+      <div className="stat-grid">
         {[
           { label: 'Total Patients', value: analytics?.totalPatients ?? '—', icon: Users, color: 'var(--primary)' },
           { label: 'Total Doctors', value: analytics?.totalDoctors ?? '—', icon: Stethoscope, color: 'var(--secondary)' },
-          { label: 'Total Appointments', value: analytics?.totalAppointments ?? '—', icon: BarChart2, color: '#22c55e' },
-          { label: 'Pending Approvals', value: pendingDoctors.length, icon: ShieldCheck, color: '#f59e0b' },
+          { label: 'Total Appointments', value: analytics?.totalAppointments ?? '—', icon: BarChart2, color: 'var(--success)' },
+          { label: 'Pending Approvals', value: pendingDoctors.length, icon: ShieldCheck, color: 'var(--warning)' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="stat-card glass-panel">
-            <div className="stat-icon" style={{ background: `${color}20`, color }}>
-              <Icon size={22} />
+          <div key={label} className="stat-card">
+            <div className="stat-icon" style={{ background: `${color}15`, color }}>
+              <Icon size={26} />
             </div>
             <div>
-              <p className="stat-value">{value}</p>
+              <p className="stat-value font-serif">{value}</p>
               <p className="stat-label">{label}</p>
             </div>
           </div>
@@ -98,13 +98,13 @@ export default function AdminDashboard() {
               <Users size={18} color="var(--primary)" /> Recent User Signups
             </h3>
             {dashboardData.recentUsers?.map(u => (
-              <div key={u.id} style={{ padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: 600 }}>{u.email}</span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(u.created_at).toLocaleDateString()}</span>
+              <div key={u.id} style={{ padding: '1rem 0', borderBottom: '1px solid var(--surface-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{u.email}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{new Date(u.created_at).toLocaleDateString()}</span>
                 </div>
-                <div style={{ fontSize: '0.8.5rem', color: 'var(--secondary)', textTransform: 'capitalize' }}>
-                  Role: {u.role}
+                <div style={{ fontSize: '0.75rem', color: 'var(--primary)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>
+                  {u.role}
                 </div>
               </div>
             ))}

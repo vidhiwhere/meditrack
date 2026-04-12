@@ -25,9 +25,14 @@ function DoctorSidebar() {
 }
 
 function StatusBadge({ status }) {
-  const map = { BOOKED: ['#f59e0b', Clock], COMPLETED: ['#22c55e', CheckCircle], CANCELLED: ['#ef4444', XCircle], SCHEDULED: ['#f59e0b', Clock] };
-  const [color, Icon] = map[status] || ['#94a3b8', Clock];
-  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: `${color}20`, color, border: `1px solid ${color}44`, padding: '0.25rem 0.7rem', borderRadius: 99, fontSize: '0.78rem', fontWeight: 600 }}><Icon size={12}/> {status}</span>;
+  const map = { 
+    BOOKED: ['var(--warning)', Clock], 
+    COMPLETED: ['var(--success)', CheckCircle], 
+    CANCELLED: ['var(--danger)', XCircle], 
+    SCHEDULED: ['var(--warning)', Clock] 
+  };
+  const [color, Icon] = map[status] || ['var(--text-muted)', Clock];
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${color}15`, color, border: `1px solid ${color}33`, padding: '0.4rem 0.9rem', borderRadius: 99, fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}><Icon size={12}/> {status}</span>;
 }
 
 export default function DoctorDashboard() {
@@ -120,25 +125,25 @@ export default function DoctorDashboard() {
 
   return (
     <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.8rem' }}>Doctor <span className="text-gradient">Dashboard</span></h1>
-        <p style={{ color: 'var(--text-muted)' }}>Manage your patients and appointments.</p>
+      <div style={{ marginBottom: '3rem' }}>
+        <h1 className="font-serif" style={{ fontSize: '2.8rem', marginBottom: '0.5rem' }}>Medical Queue</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 500 }}>Overview of your daily appointments and practice revenue.</p>
       </div>
 
       {/* Analytics row */}
-      <div className="stat-grid" style={{ marginBottom: '2rem' }}>
+      <div className="stat-grid" style={{ marginBottom: '3rem' }}>
         {[
           { label: "Today's Queue", value: todaysQueue.length, icon: Clock, color: 'var(--primary)' },
           { label: 'Total Appointments', value: appointments.length, icon: Calendar, color: 'var(--secondary)' },
-          { label: 'Completed', value: appointments.filter(a => a.status === 'COMPLETED').length, icon: CheckCircle, color: '#22c55e' },
-          { label: 'Total Revenue', value: `₹${parseFloat(analytics?.totalRevenue || 0).toLocaleString()}`, icon: BarChart2, color: '#f59e0b' },
+          { label: 'Completed', value: appointments.filter(a => a.status === 'COMPLETED').length, icon: CheckCircle, color: 'var(--success)' },
+          { label: 'Total Revenue', value: `₹${parseFloat(analytics?.totalRevenue || 0).toLocaleString()}`, icon: BarChart2, color: 'var(--warning)' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="stat-card glass-panel">
-            <div className="stat-icon" style={{ background: `${color}20`, color }}>
-              <Icon size={22} />
+          <div key={label} className="stat-card">
+            <div className="stat-icon" style={{ background: `${color}15`, color }}>
+              <Icon size={26} />
             </div>
             <div>
-              <p className="stat-value">{value}</p>
+              <p className="stat-value font-serif">{value}</p>
               <p className="stat-label">{label}</p>
             </div>
           </div>
