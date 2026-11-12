@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const patientController = require('../controllers/patient.controller');
 const { verifyToken } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/rbac.middleware');
 
-// All routes require authentication
+// All routes require authentication and patient role
 router.use(verifyToken);
+router.use(authorize('patient'));
 
 /**
  * POST /api/patient/symptoms

@@ -39,14 +39,27 @@ const getAppointments = async (req, res) => {
 const updateAppointmentStatus = async (req, res) => {
   try {
     const { appointmentId, status, fee } = req.body;
+    const userId = req.user.userId;
     
     if (!appointmentId || !status) {
       return res.status(400).json({ error: 'Appointment ID and status required' });
     }
 
-    // Verify doctor owns this appointment
+    // Get doctor record for current user
+    const doctorResult = await db.query(
+      'SELECT id FROM doctors WHERE user_id = $1 LIMIT 1',
+      [userId]
+    );
+
+    if (doctorResult.rows.length === 0) {
+      return res.status(403).json({ error: 'Not authorized as a doctor' });
+    }
+
+    const doctorId = doctorResult.rows[0].id;
+
+    // Verify appointment exists
     const appointmentResult = await db.query(
-      'SELECT doctor_id FROM appointments WHERE id = $1',
+      'SELECT id, doctor_id, status FROM appointments WHERE id = $1',
       [appointmentId]
     );
 
@@ -54,7 +67,37 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ error: 'Appointment not found' });
     }
 
-    const updated = await doctorService.updateAppointmentStatus(appointmentId, status, fee);
+    // Verify doctor owns this appointment
+    if (appointmentResult.rows[0].doctor_id !== doctorId) {
+      return res.status(403).json({ error: 'Forbidden: Cannot update another doctor\'s appointment' });
+    }
+
+    let parsedFee = null;
+    if (status === 'COMPLETED') {
+      // Check if already completed
+      if (appointmentResult.rows[0].status === 'COMPLETED') {
+        return res.status(400).json({ error: 'Appointment has already been completed' });
+      }
+
+      // Validate fee boundaries
+      if (fee !== undefined && fee !== null && fee !== '') {
+        const num = Number(fee);
+        if (isNaN(num) || typeof fee === 'boolean') {
+          return res.status(400).json({ error: 'Consultation fee must be a valid number' });
+        }
+        if (num < 0) {
+          return res.status(400).json({ error: 'Consultation fee cannot be negative' });
+        }
+        if (num > 1000000) {
+          return res.status(400).json({ error: 'Consultation fee exceeds allowable limit' });
+        }
+        parsedFee = num;
+      } else {
+        parsedFee = 0; // Fee of 0 is acceptable
+      }
+    }
+
+    const updated = await doctorService.updateAppointmentStatus(appointmentId, status, parsedFee);
     res.json({
       message: 'Appointment status updated',
       appointment: updated

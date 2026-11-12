@@ -23,7 +23,7 @@ module.exports = {
         SELECT d.*, u.email, u.phone 
         FROM doctors d 
         JOIN users u ON d.user_id = u.id 
-        WHERE u.status = 'pending'
+        WHERE u.status = 'pending' OR d.verification_status = 'PENDING'
       `);
       res.json(result.rows);
     } catch (error) {
@@ -38,6 +38,7 @@ module.exports = {
       if (docRes.rows.length === 0) return res.status(404).json({ error: 'Doctor not found' });
       
       await db.query(`UPDATE users SET status = 'active' WHERE id = $1`, [docRes.rows[0].user_id]);
+      await db.query(`UPDATE doctors SET verification_status = 'APPROVED' WHERE id = $1`, [doctorId]);
       
       // Audit log
       await db.query(`INSERT INTO dpdp_audit_logs (user_id, action, resource_accessed) VALUES ($1, 'APPROVED_DOCTOR', 'doctors/' || $2)`, [req.user.userId, doctorId]);
@@ -55,6 +56,7 @@ module.exports = {
        if (docRes.rows.length === 0) return res.status(404).json({ error: 'Doctor not found' });
        
        await db.query(`UPDATE users SET status = 'rejected' WHERE id = $1`, [docRes.rows[0].user_id]);
+       await db.query(`UPDATE doctors SET verification_status = 'REJECTED' WHERE id = $1`, [doctorId]);
        
        // Audit log
        await db.query(`INSERT INTO dpdp_audit_logs (user_id, action, resource_accessed) VALUES ($1, 'REJECTED_DOCTOR', 'doctors/' || $2)`, [req.user.userId, doctorId]);

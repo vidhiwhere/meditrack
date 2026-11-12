@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const doctorController = require('../controllers/doctor.controller');
 const { verifyToken } = require('../middleware/auth.middleware');
+const { authorize } = require('../middleware/rbac.middleware');
 
-// All routes require authentication
+// All routes require authentication and doctor role
 router.use(verifyToken);
+router.use(authorize('doctor'));
 
 /**
  * GET /api/doctor/appointments
