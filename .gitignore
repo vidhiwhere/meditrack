@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# k6 output
+load-tests/*.json
+
+# Docker override
+docker-compose.override.yml

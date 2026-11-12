@@ -93,3 +93,130 @@ Ensure your local `VITE_API_BASE` points to `http://localhost:3000/api`.
 \`\`\`bash
 npm run dev
 \`\`\`
+
+---
+
+## 🧪 Testing
+
+The platform features an automated quality engineering suite covering backend API tests, Playwright end-to-end user journeys, live deployment smoke tests, and k6 load tests.
+
+For an in-depth breakdown of test scenarios and traceability, see [TEST_PLAN.md](file:///c:/Users/vidhi/Documents/meditrack/TEST_PLAN.md).
+
+### 1. Prerequisites & Installation
+
+Install dependencies across the monorepo and backend:
+\`\`\`bash
+# Install root dependencies (including Playwright)
+npm install
+
+# Install backend dependencies (including Jest and Supertest)
+cd lumia-backend && npm install && cd ..
+\`\`\`
+
+Install Playwright Chromium browser binaries:
+\`\`\`bash
+npx playwright install chromium
+\`\`\`
+
+---
+
+### 2. Test Database Setup & Test Data
+
+Tests do **not** run against the live production Neon database to prevent demo data pollution.
+
+#### Option A: Dockerized PostgreSQL (Recommended for Local DB)
+A dedicated `docker-compose.test.yml` is provided on port `5433`:
+\`\`\`bash
+# Start isolated PostgreSQL 16 container
+docker compose -f docker-compose.test.yml up -d
+
+# Set environment variable pointing to the test DB
+export TEST_DATABASE_URL="postgres://postgres:postgres@localhost:5433/meditrack_test?sslmode=disable"
+\`\`\`
+
+#### Option B: Zero-Config In-Memory Database (`pg-mem`)
+If no external database is configured, the test suite automatically boots an isolated, in-memory PostgreSQL engine (`pg-mem`) with identical schema and functions. No Docker or PostgreSQL installation is required!
+
+#### Seed / Reset Test Data
+Reset and seed deterministic fixtures (Admin, Doctors, Patients, Appointments):
+\`\`\`bash
+npm run test:seed
+# or directly in backend:
+cd lumia-backend && npm run db:reset:test
+\`\`\`
+
+---
+
+### 3. Running API Tests (Jest + Supertest)
+
+Run the complete 60-test API suite covering Auth, RBAC, Appointments, Consultations & Fees, Admin verification, and Schema validation:
+\`\`\`bash
+# Run all backend API tests
+npm run test:api
+
+# Run with test coverage report
+cd lumia-backend && npm run test:coverage
+\`\`\`
+
+---
+
+### 4. Running Playwright End-to-End Tests
+
+The Playwright suite verifies real end-to-end user workflows with reusable login state caching and role protection guards:
+\`\`\`bash
+# Run all E2E tests headless
+npm run test:e2e
+
+# Run with interactive UI mode
+npm run test:e2e:ui
+
+# Run in headed browser mode
+npm run test:e2e:headed
+
+# View HTML Test Report and failure screenshots
+npm run test:report
+\`\`\`
+
+---
+
+### 5. Live Production Smoke Test
+
+Run a quick health and connectivity check against the live Vercel frontend and Render backend:
+\`\`\`bash
+npm run test:smoke:live
+\`\`\`
+
+> [!NOTE]
+> **Render Free-Tier Sleep Notice:** The live backend on Render's free tier spins down after inactivity. Cold starts can take 30–50 seconds on the first request. The live smoke test suite is configured with generous 90–120s timeouts to prevent false alarms and distinguish environmental wake-up delays from actual product bugs.
+
+---
+
+### 6. Performance & Load Testing (k6)
+
+Simulate 20 concurrent virtual users hitting the login flow and appointments directory:
+\`\`\`bash
+# Run k6 load test against Render API (or local backend)
+k6 run load-tests/k6-load-test.js
+
+# Or against local backend:
+k6 run -e TARGET_URL="http://localhost:3000" load-tests/k6-load-test.js
+\`\`\`
+
+---
+
+### 7. Continuous Integration (GitHub Actions)
+
+Every pull request and push to `main` runs the automated CI pipeline defined in `.github/workflows/ci.yml`:
+- Starts an isolated PostgreSQL 16 service container.
+- Installs dependencies and runs schema migrations & test seeders.
+- Executes the Jest + Supertest API test suite.
+- Runs the Playwright End-to-End test suite.
+- Automatically captures and uploads Playwright failure reports, traces, and screenshots as build artifacts.
+
+---
+
+### 8. Bug Reports
+Real defects discovered and resolved during quality engineering are documented under [`docs/bug-reports/`](file:///c:/Users/vidhi/Documents/meditrack/docs/bug-reports/):
+- [BUG-001: Admin Doctor Approval Verification Status Desync](file:///c:/Users/vidhi/Documents/meditrack/docs/bug-reports/BUG-001-admin-doctor-verification-desync.md)
+- [BUG-002: BOLA Vulnerability in Appointment Cancellation](file:///c:/Users/vidhi/Documents/meditrack/docs/bug-reports/BUG-002-bola-appointment-cancellation.md)
+
