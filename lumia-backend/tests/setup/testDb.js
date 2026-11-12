@@ -15,8 +15,8 @@ async function setupTestDb() {
     try {
       await db.query('SELECT 1');
       const schemaSql = fs.readFileSync(path.join(__dirname, '../../migrations/001_init.sql'), 'utf8');
-      await db.query(schemaSql).catch(() => {});
-      await db.query('ALTER TABLE appointments ADD COLUMN IF NOT EXISTS fee DECIMAL(10,2)').catch(() => {});
+      await db.query(schemaSql).catch(() => { });
+      await db.query('ALTER TABLE appointments ADD COLUMN IF NOT EXISTS fee DECIMAL(10,2)').catch(() => { });
       return;
     } catch (err) {
       console.warn('Real database connection failed, falling back to pg-mem:', err.message);
@@ -41,7 +41,7 @@ async function setupTestDb() {
     memDbInstance.public.none(schemaSql);
     try {
       memDbInstance.public.none('ALTER TABLE appointments ADD COLUMN IF NOT EXISTS fee numeric;');
-    } catch (_) {}
+    } catch (_) { }
 
     const pgAdapter = memDbInstance.adapters.createPg();
     const memPool = new pgAdapter.Pool();

@@ -6,10 +6,10 @@ const connectionUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
 let poolConfig;
 
 if (connectionUrl) {
-  const isLocal = connectionUrl.includes('localhost') || 
-                  connectionUrl.includes('127.0.0.1') || 
-                  connectionUrl.includes('sslmode=disable') ||
-                  process.env.DB_SSL === 'false';
+  const isLocal = connectionUrl.includes('localhost') ||
+    connectionUrl.includes('127.0.0.1') ||
+    connectionUrl.includes('sslmode=disable') ||
+    process.env.DB_SSL === 'false';
 
   poolConfig = {
     connectionString: connectionUrl,

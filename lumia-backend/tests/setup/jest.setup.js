@@ -16,3 +16,4 @@ if (!process.env.DEBUG_TESTS) {
   jest.spyOn(console, 'info').mockImplementation(noop);
   jest.spyOn(console, 'warn').mockImplementation(noop);
 }
+

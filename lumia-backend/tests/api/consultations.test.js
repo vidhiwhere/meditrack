@@ -180,3 +180,4 @@ describe('API Tests: Consultation Completion & Fee Boundary Cases (/api/doctor/a
     });
   });
 });
+
