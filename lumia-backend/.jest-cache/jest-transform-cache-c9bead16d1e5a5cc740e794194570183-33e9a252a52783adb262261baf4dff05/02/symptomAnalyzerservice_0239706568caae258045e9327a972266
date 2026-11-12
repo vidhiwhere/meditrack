@@ -1,0 +1,73 @@
+5c6f57f111cd54ab2c0201c3f50ba3f6
+// Symptom Analyzer Service - AI-powered symptom analysis
+const {
+  OpenAI
+} = require('openai');
+const env = require('../../config/env');
+const logger = require('../../utils/logger');
+let openai;
+if (env.AI_SERVICE_KEY) {
+  openai = new OpenAI({
+    apiKey: env.AI_SERVICE_KEY
+  });
+}
+module.exports = {
+  analyzeSymptom: async symptomDescription => {
+    try {
+      if (!openai) {
+        logger.warn('OpenAI not configured, falling back to basic analysis.');
+        return fallbackAnalysis(symptomDescription);
+      }
+      const prompt = `
+        Analyze the following patient symptom description:
+        "${symptomDescription}"
+        
+        Provide a JSON response with:
+        - conditions: Array of probable root conditions or keywords.
+        - urgency: 'LOW', 'MEDIUM', 'HIGH', or 'EMERGENCY'.
+        - recommendedDoctorType: The most appropriate specialist (e.g. 'General Physician', 'Cardiologist').
+        - risk_score: A number from 0-100 indicating severity.
+      `;
+      const response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{
+          role: 'system',
+          content: 'You are a medical triage assistant. Output only valid JSON.'
+        }, {
+          role: 'user',
+          content: prompt
+        }],
+        response_format: {
+          type: "json_object"
+        }
+      });
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      logger.error('OpenAI symptom analysis error', {
+        error: error.message
+      });
+      return fallbackAnalysis(symptomDescription);
+    }
+  },
+  generateQuestionnaire: async symptomAnalysis => {
+    // Generate smart questions based on symptom
+    return [];
+  }
+};
+function fallbackAnalysis(text) {
+  const emergencyKeywords = ['emergency', 'chest pain', 'breathing', 'unconscious'];
+  const lowerText = text.toLowerCase();
+  let urgency = 'LOW';
+  let score = 10;
+  if (emergencyKeywords.some(k => lowerText.includes(k))) {
+    urgency = 'EMERGENCY';
+    score = 90;
+  }
+  return {
+    conditions: ['Unknown'],
+    urgency,
+    recommendedDoctorType: 'General Physician',
+    risk_score: score
+  };
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJPcGVuQUkiLCJyZXF1aXJlIiwiZW52IiwibG9nZ2VyIiwib3BlbmFpIiwiQUlfU0VSVklDRV9LRVkiLCJhcGlLZXkiLCJtb2R1bGUiLCJleHBvcnRzIiwiYW5hbHl6ZVN5bXB0b20iLCJzeW1wdG9tRGVzY3JpcHRpb24iLCJ3YXJuIiwiZmFsbGJhY2tBbmFseXNpcyIsInByb21wdCIsInJlc3BvbnNlIiwiY2hhdCIsImNvbXBsZXRpb25zIiwiY3JlYXRlIiwibW9kZWwiLCJtZXNzYWdlcyIsInJvbGUiLCJjb250ZW50IiwicmVzcG9uc2VfZm9ybWF0IiwidHlwZSIsIkpTT04iLCJwYXJzZSIsImNob2ljZXMiLCJtZXNzYWdlIiwiZXJyb3IiLCJnZW5lcmF0ZVF1ZXN0aW9ubmFpcmUiLCJzeW1wdG9tQW5hbHlzaXMiLCJ0ZXh0IiwiZW1lcmdlbmN5S2V5d29yZHMiLCJsb3dlclRleHQiLCJ0b0xvd2VyQ2FzZSIsInVyZ2VuY3kiLCJzY29yZSIsInNvbWUiLCJrIiwiaW5jbHVkZXMiLCJjb25kaXRpb25zIiwicmVjb21tZW5kZWREb2N0b3JUeXBlIiwicmlza19zY29yZSJdLCJzb3VyY2VzIjpbInN5bXB0b21BbmFseXplci5zZXJ2aWNlLmpzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIFN5bXB0b20gQW5hbHl6ZXIgU2VydmljZSAtIEFJLXBvd2VyZWQgc3ltcHRvbSBhbmFseXNpc1xyXG5jb25zdCB7IE9wZW5BSSB9ID0gcmVxdWlyZSgnb3BlbmFpJyk7XHJcbmNvbnN0IGVudiA9IHJlcXVpcmUoJy4uLy4uL2NvbmZpZy9lbnYnKTtcclxuY29uc3QgbG9nZ2VyID0gcmVxdWlyZSgnLi4vLi4vdXRpbHMvbG9nZ2VyJyk7XHJcblxyXG5sZXQgb3BlbmFpO1xyXG5pZiAoZW52LkFJX1NFUlZJQ0VfS0VZKSB7XHJcbiAgb3BlbmFpID0gbmV3IE9wZW5BSSh7IGFwaUtleTogZW52LkFJX1NFUlZJQ0VfS0VZIH0pO1xyXG59XHJcblxyXG5tb2R1bGUuZXhwb3J0cyA9IHtcclxuICBhbmFseXplU3ltcHRvbTogYXN5bmMgKHN5bXB0b21EZXNjcmlwdGlvbikgPT4ge1xyXG4gICAgdHJ5IHtcclxuICAgICAgaWYgKCFvcGVuYWkpIHtcclxuICAgICAgICBsb2dnZXIud2FybignT3BlbkFJIG5vdCBjb25maWd1cmVkLCBmYWxsaW5nIGJhY2sgdG8gYmFzaWMgYW5hbHlzaXMuJyk7XHJcbiAgICAgICAgcmV0dXJuIGZhbGxiYWNrQW5hbHlzaXMoc3ltcHRvbURlc2NyaXB0aW9uKTtcclxuICAgICAgfVxyXG5cclxuICAgICAgY29uc3QgcHJvbXB0ID0gYFxyXG4gICAgICAgIEFuYWx5emUgdGhlIGZvbGxvd2luZyBwYXRpZW50IHN5bXB0b20gZGVzY3JpcHRpb246XHJcbiAgICAgICAgXCIke3N5bXB0b21EZXNjcmlwdGlvbn1cIlxyXG4gICAgICAgIFxyXG4gICAgICAgIFByb3ZpZGUgYSBKU09OIHJlc3BvbnNlIHdpdGg6XHJcbiAgICAgICAgLSBjb25kaXRpb25zOiBBcnJheSBvZiBwcm9iYWJsZSByb290IGNvbmRpdGlvbnMgb3Iga2V5d29yZHMuXHJcbiAgICAgICAgLSB1cmdlbmN5OiAnTE9XJywgJ01FRElVTScsICdISUdIJywgb3IgJ0VNRVJHRU5DWScuXHJcbiAgICAgICAgLSByZWNvbW1lbmRlZERvY3RvclR5cGU6IFRoZSBtb3N0IGFwcHJvcHJpYXRlIHNwZWNpYWxpc3QgKGUuZy4gJ0dlbmVyYWwgUGh5c2ljaWFuJywgJ0NhcmRpb2xvZ2lzdCcpLlxyXG4gICAgICAgIC0gcmlza19zY29yZTogQSBudW1iZXIgZnJvbSAwLTEwMCBpbmRpY2F0aW5nIHNldmVyaXR5LlxyXG4gICAgICBgO1xyXG5cclxuICAgICAgY29uc3QgcmVzcG9uc2UgPSBhd2FpdCBvcGVuYWkuY2hhdC5jb21wbGV0aW9ucy5jcmVhdGUoe1xyXG4gICAgICAgIG1vZGVsOiAnZ3B0LTMuNS10dXJibycsXHJcbiAgICAgICAgbWVzc2FnZXM6IFt7IHJvbGU6ICdzeXN0ZW0nLCBjb250ZW50OiAnWW91IGFyZSBhIG1lZGljYWwgdHJpYWdlIGFzc2lzdGFudC4gT3V0cHV0IG9ubHkgdmFsaWQgSlNPTi4nIH0sIHsgcm9sZTogJ3VzZXInLCBjb250ZW50OiBwcm9tcHQgfV0sXHJcbiAgICAgICAgcmVzcG9uc2VfZm9ybWF0OiB7IHR5cGU6IFwianNvbl9vYmplY3RcIiB9XHJcbiAgICAgIH0pO1xyXG5cclxuICAgICAgcmV0dXJuIEpTT04ucGFyc2UocmVzcG9uc2UuY2hvaWNlc1swXS5tZXNzYWdlLmNvbnRlbnQpO1xyXG4gICAgfSBjYXRjaCAoZXJyb3IpIHtcclxuICAgICAgbG9nZ2VyLmVycm9yKCdPcGVuQUkgc3ltcHRvbSBhbmFseXNpcyBlcnJvcicsIHsgZXJyb3I6IGVycm9yLm1lc3NhZ2UgfSk7XHJcbiAgICAgIHJldHVybiBmYWxsYmFja0FuYWx5c2lzKHN5bXB0b21EZXNjcmlwdGlvbik7XHJcbiAgICB9XHJcbiAgfSxcclxuICBcclxuICBnZW5lcmF0ZVF1ZXN0aW9ubmFpcmU6IGFzeW5jIChzeW1wdG9tQW5hbHlzaXMpID0+IHtcclxuICAgIC8vIEdlbmVyYXRlIHNtYXJ0IHF1ZXN0aW9ucyBiYXNlZCBvbiBzeW1wdG9tXHJcbiAgICByZXR1cm4gW107XHJcbiAgfSxcclxufTtcclxuXHJcbmZ1bmN0aW9uIGZhbGxiYWNrQW5hbHlzaXModGV4dCkge1xyXG4gIGNvbnN0IGVtZXJnZW5jeUtleXdvcmRzID0gWydlbWVyZ2VuY3knLCAnY2hlc3QgcGFpbicsICdicmVhdGhpbmcnLCAndW5jb25zY2lvdXMnXTtcclxuICBjb25zdCBsb3dlclRleHQgPSB0ZXh0LnRvTG93ZXJDYXNlKCk7XHJcbiAgXHJcbiAgbGV0IHVyZ2VuY3kgPSAnTE9XJztcclxuICBsZXQgc2NvcmUgPSAxMDtcclxuICBpZiAoZW1lcmdlbmN5S2V5d29yZHMuc29tZShrID0+IGxvd2VyVGV4dC5pbmNsdWRlcyhrKSkpIHtcclxuICAgIHVyZ2VuY3kgPSAnRU1FUkdFTkNZJztcclxuICAgIHNjb3JlID0gOTA7XHJcbiAgfVxyXG4gIHJldHVybiB7XHJcbiAgICBjb25kaXRpb25zOiBbJ1Vua25vd24nXSxcclxuICAgIHVyZ2VuY3ksXHJcbiAgICByZWNvbW1lbmRlZERvY3RvclR5cGU6ICdHZW5lcmFsIFBoeXNpY2lhbicsXHJcbiAgICByaXNrX3Njb3JlOiBzY29yZVxyXG4gIH07XHJcbn1cbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFDQSxNQUFNO0VBQUVBO0FBQU8sQ0FBQyxHQUFHQyxPQUFPLENBQUMsUUFBUSxDQUFDO0FBQ3BDLE1BQU1DLEdBQUcsR0FBR0QsT0FBTyxDQUFDLGtCQUFrQixDQUFDO0FBQ3ZDLE1BQU1FLE1BQU0sR0FBR0YsT0FBTyxDQUFDLG9CQUFvQixDQUFDO0FBRTVDLElBQUlHLE1BQU07QUFDVixJQUFJRixHQUFHLENBQUNHLGNBQWMsRUFBRTtFQUN0QkQsTUFBTSxHQUFHLElBQUlKLE1BQU0sQ0FBQztJQUFFTSxNQUFNLEVBQUVKLEdBQUcsQ0FBQ0c7RUFBZSxDQUFDLENBQUM7QUFDckQ7QUFFQUUsTUFBTSxDQUFDQyxPQUFPLEdBQUc7RUFDZkMsY0FBYyxFQUFFLE1BQU9DLGtCQUFrQixJQUFLO0lBQzVDLElBQUk7TUFDRixJQUFJLENBQUNOLE1BQU0sRUFBRTtRQUNYRCxNQUFNLENBQUNRLElBQUksQ0FBQyx3REFBd0QsQ0FBQztRQUNyRSxPQUFPQyxnQkFBZ0IsQ0FBQ0Ysa0JBQWtCLENBQUM7TUFDN0M7TUFFQSxNQUFNRyxNQUFNLEdBQUc7QUFDckI7QUFDQSxXQUFXSCxrQkFBa0I7QUFDN0I7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EsT0FBTztNQUVELE1BQU1JLFFBQVEsR0FBRyxNQUFNVixNQUFNLENBQUNXLElBQUksQ0FBQ0MsV0FBVyxDQUFDQyxNQUFNLENBQUM7UUFDcERDLEtBQUssRUFBRSxlQUFlO1FBQ3RCQyxRQUFRLEVBQUUsQ0FBQztVQUFFQyxJQUFJLEVBQUUsUUFBUTtVQUFFQyxPQUFPLEVBQUU7UUFBOEQsQ0FBQyxFQUFFO1VBQUVELElBQUksRUFBRSxNQUFNO1VBQUVDLE9BQU8sRUFBRVI7UUFBTyxDQUFDLENBQUM7UUFDeklTLGVBQWUsRUFBRTtVQUFFQyxJQUFJLEVBQUU7UUFBYztNQUN6QyxDQUFDLENBQUM7TUFFRixPQUFPQyxJQUFJLENBQUNDLEtBQUssQ0FBQ1gsUUFBUSxDQUFDWSxPQUFPLENBQUMsQ0FBQyxDQUFDLENBQUNDLE9BQU8sQ0FBQ04sT0FBTyxDQUFDO0lBQ3hELENBQUMsQ0FBQyxPQUFPTyxLQUFLLEVBQUU7TUFDZHpCLE1BQU0sQ0FBQ3lCLEtBQUssQ0FBQywrQkFBK0IsRUFBRTtRQUFFQSxLQUFLLEVBQUVBLEtBQUssQ0FBQ0Q7TUFBUSxDQUFDLENBQUM7TUFDdkUsT0FBT2YsZ0JBQWdCLENBQUNGLGtCQUFrQixDQUFDO0lBQzdDO0VBQ0YsQ0FBQztFQUVEbUIscUJBQXFCLEVBQUUsTUFBT0MsZUFBZSxJQUFLO0lBQ2hEO0lBQ0EsT0FBTyxFQUFFO0VBQ1g7QUFDRixDQUFDO0FBRUQsU0FBU2xCLGdCQUFnQkEsQ0FBQ21CLElBQUksRUFBRTtFQUM5QixNQUFNQyxpQkFBaUIsR0FBRyxDQUFDLFdBQVcsRUFBRSxZQUFZLEVBQUUsV0FBVyxFQUFFLGFBQWEsQ0FBQztFQUNqRixNQUFNQyxTQUFTLEdBQUdGLElBQUksQ0FBQ0csV0FBVyxDQUFDLENBQUM7RUFFcEMsSUFBSUMsT0FBTyxHQUFHLEtBQUs7RUFDbkIsSUFBSUMsS0FBSyxHQUFHLEVBQUU7RUFDZCxJQUFJSixpQkFBaUIsQ0FBQ0ssSUFBSSxDQUFDQyxDQUFDLElBQUlMLFNBQVMsQ0FBQ00sUUFBUSxDQUFDRCxDQUFDLENBQUMsQ0FBQyxFQUFFO0lBQ3RESCxPQUFPLEdBQUcsV0FBVztJQUNyQkMsS0FBSyxHQUFHLEVBQUU7RUFDWjtFQUNBLE9BQU87SUFDTEksVUFBVSxFQUFFLENBQUMsU0FBUyxDQUFDO0lBQ3ZCTCxPQUFPO0lBQ1BNLHFCQUFxQixFQUFFLG1CQUFtQjtJQUMxQ0MsVUFBVSxFQUFFTjtFQUNkLENBQUM7QUFDSCIsImlnbm9yZUxpc3QiOltdfQ==

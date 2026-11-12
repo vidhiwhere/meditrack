@@ -1,9 +1,6 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const { Pool } = require('pg');
-require('dotenv').config();
-
 const connectionUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
 
 let poolConfig;
