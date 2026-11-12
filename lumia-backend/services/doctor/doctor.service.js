@@ -255,13 +255,14 @@ function getDrugInteractionDatabase() {
 const getPatients = async (doctorId) => {
   try {
     const result = await db.query(
-      `SELECT DISTINCT p.id, p.first_name, p.last_name, p.dob, p.gender, u.email, u.phone,
-              (SELECT MAX(scheduled_at) FROM appointments WHERE patient_id = p.id AND doctor_id = $1) as last_visit,
-              (SELECT SUM(fee) FROM appointments WHERE patient_id = p.id AND doctor_id = $1 AND status = 'COMPLETED') as total_revenue
+      `SELECT p.id, p.first_name, p.last_name, p.dob, p.gender, u.email, u.phone,
+              MAX(a.scheduled_at) as last_visit,
+              COALESCE(SUM(CASE WHEN a.status = 'COMPLETED' THEN a.fee ELSE 0 END), 0) as total_revenue
        FROM patients p
        JOIN users u ON p.user_id = u.id
        JOIN appointments a ON a.patient_id = p.id
        WHERE a.doctor_id = $1
+       GROUP BY p.id, p.first_name, p.last_name, p.dob, p.gender, u.email, u.phone
        ORDER BY last_visit DESC`,
       [doctorId]
     );
