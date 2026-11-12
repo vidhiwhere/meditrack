@@ -119,3 +119,4 @@ rbac.test.js > GET /api/doctor/patients > returns patient list for authenticated
 - Prefer `GROUP BY` aggregate queries over correlated subqueries for lists with computed columns.
 - Run the Jest suite (with `pg-mem` fallback) on every PR — it catches environment-specific SQL
   portability issues before they reach production.
+

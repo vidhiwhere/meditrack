@@ -21,3 +21,4 @@ load-tests/*.json
 
 # Docker override
 docker-compose.override.yml
+
